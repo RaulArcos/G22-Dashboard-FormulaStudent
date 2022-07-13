@@ -9,14 +9,14 @@
 
 //Inicialización de pines
   int data = 8;    // DIN pin del módulo MAX7219
-  int load = 9;    // CS pin del módulo MAX7219
-  int clock = 10;  // CLK pin del módulo MAX7219
+  int load = 10;    // CS pin del módulo MAX7219
+  int clock = 9;  // CLK pin del módulo MAX7219
   int maxInUse = 1;    // Cuantos módulos MAX7219 se estan usando
   MaxMatrix m(data, load, clock, maxInUse);
   byte buffer[10];
-  int pin_leds_revoluciones[6] = {5, 4, 3, 2, 1, 0};
+  int pin_leds_revoluciones[3] = {4,5,6};
   int pin_led_rojo = 6;
-  const int SPI_CS_PIN = 53; //PIN CS (53 mega // 9 uno)
+  const int SPI_CS_PIN = 7; //PIN CS (53 mega // 9 uno)
 
 //Datos recibidos por el CAN BUS (sólo se necesitará un stream)
   unsigned int revoluciones; // > 255
@@ -49,7 +49,7 @@ void fun_revoluciones (unsigned int revoluciones){
     for (int i = 0; i < 4; i++)
       digitalWrite(pin_leds_revoluciones[i], HIGH);
   } else {
-    for (int i = 0; i < pin_leds_revoluciones.length(); i++)
+    for (int i = 0; i < 6; i++)
       digitalWrite(pin_leds_revoluciones[i], HIGH);
   }
 }
@@ -121,6 +121,9 @@ void CanBus(){
 //Función START: Inicia el CAN BUS para funcionar.
 void Start(){  
   //INICIA EL CANBUS
+      for (int i = 0; i < 3; i++)
+      digitalWrite(pin_leds_revoluciones[i], HIGH);
+  
   while (CAN_OK != CAN.begin(CAN_250KBPS)) {           //PONER ECU A 125 SI NO, NO VA.
     Serial.println("CAN BUS Shield Fallo Inicio");
     Serial.println("Init CAN BUS Shield again");
@@ -136,15 +139,14 @@ void setup() {
 
   //Definimos LEDS que vamos a usar, como salida.
   pinMode(pin_led_rojo, OUTPUT); //LED PELIGRO (Rojo)
-  for(int i = 0; i < pin_leds_revoluciones.length(); i++)
+  for(int i = 0; i < 6; i++)
     pinMode(pin_leds_revoluciones[i], OUTPUT);
 
   //Iniciamos la MATRIZ y ajustamos su brillo.
   m.init(); 
   m.setIntensity(15); // Intensidad luminosa de la matriz
 
-  //Llamamos a la función START (Aquí va todo el inicio del programa de CAN y todo).
-  Start();
+  //Llamamos a la función START (Aquí va todo el inicio del programa de CAN y todo)
 }
 
 void loop() {
